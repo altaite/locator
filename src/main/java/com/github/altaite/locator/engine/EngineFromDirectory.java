@@ -52,6 +52,7 @@ public class EngineFromDirectory implements EngineFactory {
         for (Word w : wf.create(file.getName())) {
             unit.add(w);
         }
+        
         try ( BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
