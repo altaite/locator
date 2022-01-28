@@ -1,8 +1,5 @@
 package com.github.altaite.locator.engine;
 
-// for indexing, similarity is important, not content or exact match
-// mostly to allow customized hashing
-// equals and compare!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 public class Word {
 
 	private String word;

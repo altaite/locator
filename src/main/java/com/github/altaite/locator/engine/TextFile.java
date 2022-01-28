@@ -1,23 +1,17 @@
 package com.github.altaite.locator.engine;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class Unit {
+public final class TextFile {
 
-    private String id;
+    private final File file;
     private String content;
-    private List<Word> words;
+    private final List<Word> words;
 
-    @Deprecated
-    public Unit(String id, String content) {
-        this.id = id;
-        this.content = content;
-        this.words = new ArrayList<>();
-    }
-
-    public Unit(String id) {
-        this.id = id;
+    public TextFile(File file) {
+        this.file = file;
         this.words = new ArrayList<>();
     }
 
@@ -37,10 +31,11 @@ public final class Unit {
         return words;
     }
 
-    public String getId() {
-        return id;
+    public File getFile() {
+        return file;
     }
 
+    @Override
     public String toString() {
         return content;
     }

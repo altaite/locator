@@ -3,8 +3,9 @@ package com.github.altaite.locator;
 import com.github.altaite.locator.engine.Engine;
 import com.github.altaite.locator.engine.EngineFactory;
 import com.github.altaite.locator.engine.EngineFromDirectory;
+import com.github.altaite.locator.engine.FileResult;
 import com.github.altaite.locator.engine.Query;
-import com.github.altaite.locator.engine.Unit;
+import com.github.altaite.locator.engine.TextFile;
 import com.github.altaite.locator.execute.Executor;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
@@ -19,56 +20,46 @@ import javax.swing.event.DocumentListener;
 
 public final class Window {
 
-    private final AppState state = new AppState();
     private JList hitJList;
-    private final DefaultListModel<HitLink> model = new DefaultListModel<>();
+    private final DefaultListModel<FileResult> model = new DefaultListModel<>();
     private final Executor executor = new Executor();
 
     private void run() {
-        executor.runEmacsDaemon();
+        //executor.runEmacsDaemon();
 
-        JFrame f = new JFrame("Locator");
-        f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        JFrame frame = new JFrame("Locator");
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         JTextField searchField;
         searchField = new JTextField("");
         searchField.addActionListener((ActionEvent e) -> {
-            int i = hitJList.getSelectedIndex();
-            if (i >= 0) {
-                HitLink hl = model.getElementAt(i);
-                executor.openInEmacsClient(hl.getFile());
-            }
+            openFileInEditor();
         });
         searchField.setBounds(10, 10, 750, 30);
-        f.add(searchField);
-        
-        JLabel l = new JLabel("Type to search.");
-        l.setBounds(10, 40, 750, 40);
-        f.add(l);
+        frame.add(searchField);
+
+        JLabel label = new JLabel("Type to search.");
+        label.setBounds(10, 40, 750, 40);
+        frame.add(label);
 
         hitJList = new JList(model);
         hitJList.setBounds(10, 80, 750, 500);
         DefaultListCellRenderer renderer = (DefaultListCellRenderer) hitJList.getCellRenderer();
         renderer.setHorizontalAlignment(JLabel.LEFT);
-        f.add(hitJList);
+        frame.add(hitJList);
 
         hitJList.getInputMap(JComboBox.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke("ENTER"), "doSomething");
         hitJList.getActionMap().put("doSomething", new AbstractAction() {
-
             @Override
             public void actionPerformed(ActionEvent e) {
-                int i = hitJList.getSelectedIndex();
-                if (i >= 0) {
-                    HitLink hl = model.getElementAt(i);
-                    executor.openInEmacsClient(hl.getFile());
-                }
+                openFileInEditor();
             }
         });
 
-        f.setSize(800, 600);
-        f.setLayout(null);
-        f.setLocationRelativeTo(null);
-        f.setVisible(true);
+        frame.setSize(800, 600);
+        frame.setLayout(null);
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
 
         KeyboardFocusManager.getCurrentKeyboardFocusManager()
                 .addKeyEventDispatcher(new KeyEventDispatcher() {
@@ -91,18 +82,19 @@ public final class Window {
                                 });
                                 break;
                             default:
+                                searchField.requestFocus();
                                 break;
                         }
                         return false;
                     }
                 });
 
-        JTextArea t = new JTextArea();
+        /*JTextArea t = new JTextArea();
         t.setText("bla\nbla");
-        f.add(t);
-
+        frame.add(t);
+         */
         EngineFactory ef = new EngineFromDirectory();
-        Engine e = ef.create(new File("d:/t/memo/thoughts"));
+        Engine e = ef.create(new File("d:/t/documents/private"));
         System.out.println("Engine created.");
 
         searchField.getDocument().addDocumentListener(new DocumentListener() {
@@ -128,25 +120,26 @@ public final class Window {
             public void runSearch() {
                 model.clear();
                 Query q = new Query(searchField.getText());
-                List<Unit> units = e.findAndMatches(q);
-
-                List<String> hitList = new ArrayList<>();
-                units.forEach(u -> hitList.add(u.getId()));
-                state.setHitList(hitList);
-
-                state.setHits(units.size());
+                List<FileResult> results = e.search(q);
                 StringBuilder sb = new StringBuilder("<html>Found: ");
-                sb.append(units.size());
-                for (int i = 0; i < Math.min(units.size(), 20); i++) {
-                    Unit u = units.get(i);
-                    String id = u.getId();
-                    model.addElement(new HitLink(new File(id))); // todo getFile
+                sb.append(results.size());
+                for (int i = 0; i < Math.min(results.size(), 20); i++) {
+                    FileResult u = results.get(i);
+                    model.addElement(u);
                 }
                 sb.append("</html>");
-                l.setText(sb.toString() + units.size());
+                label.setText(sb.toString() + results.size());
                 hitJList.setSelectedIndex(0);
             }
         });
+    }
+
+    private void openFileInEditor() {
+        int i = hitJList.getSelectedIndex();
+        if (i >= 0) {
+            FileResult f = model.getElementAt(i);
+            executor.openInBrackets(f.getFile());
+        }
     }
 
     public static void main(String args[]) {

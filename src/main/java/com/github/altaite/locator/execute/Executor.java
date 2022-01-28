@@ -10,9 +10,7 @@ public final class Executor {
     private final String emacs = "d:\\t\\instal\\emacs\\bin\\runemacs.exe";
     private final String emacsClient = "d:\\t\\instal\\emacs\\bin\\emacsclientw.exe -t";
     private final String emacsDaemon = "d:\\t\\instal\\emacs\\bin\\emacs --daemon";
-//emacs --daemon    
-//emacsclient -t
-//emacsclient -nw -c
+    private final String brackets = "\"C:\\Program Files (x86)\\Brackets\\Brackets.exe\"";
 
     public void runEmacsDaemon() {
         run(emacsDaemon);
@@ -34,6 +32,10 @@ public final class Executor {
         open(emacsClient, file);
     }
 
+    public void openInBrackets(File file) {
+        open(brackets, file);
+    }
+
     private void open(String program, File file) {
         run(program + " \"" + file.getAbsolutePath() + "\"");
     }
@@ -45,8 +47,4 @@ public final class Executor {
             throw new RuntimeException(ex);
         }
     }
-
-    /*public static void main(String[] args) throws IOException {
-        Process process = Runtime.getRuntime().exec("d:\\t\\instal\\vim\\vim82\\gvim.exe d:\\t\\file.txt");
-    }*/
 }
